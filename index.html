@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timezone Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --background-color: #f0f2f5;
+            --card-background: white;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--card-background);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .main-time {
+            grid-column: 1 / -1;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .current-time {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .date-display {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .info-row {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+        }
+
+        .world-clock {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .world-time-item {
+            padding: 10px;
+            text-align: center;
+            background-color: rgba(0,0,0,0.05);
+            border-radius: 8px;
+        }
+
+        .day-night-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            font-size: 1.2rem;
+        }
+
+        .day-night-icon {
+            font-size: 2rem;
+            margin-right: 10px;
+        }
+
+        .ip-input-container {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .ip-input {
+            padding: 10px 15px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 200px;
+        }
+
+        .lookup-btn {
+            padding: 10px 20px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+
+        .lookup-btn:hover {
+            background-color: var(--primary-color);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="card main-time">
+            <h1>Timezone Dashboard</h1>
+            <div class="current-time" id="currentTime">00:00:00</div>
+            <div class="date-display" id="localDate">Loading...</div>
+        </div>
+
+        <div class="card">
+            <h2>Local Information</h2>
+            <div class="info-row">
+                <div class="info-label">Timezone</div>
+                <div class="info-value" id="timezone">Loading...</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">UTC Offset</div>
+                <div class="info-value" id="utcOffset">Loading...</div>
+            </div>
+            <div class="day-night-indicator" id="dayNightIndicator">
+                <span class="day-night-icon">🌤️</span>
+                <span id="dayPeriod">Day</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>World Clock</h2>
+            <div class="world-clock" id="worldClock">
+                <div class="world-time-item">
+                    <div class="info-label">London</div>
+                    <div class="info-value" id="londonTime">Loading...</div>
+                </div>
+                <div class="world-time-item">
+                    <div class="info-label">New York</div>
+                    <div class="info-value" id="newYorkTime">Loading...</div>
+                </div>
+                <div class="world-time-item">
+                    <div class="info-label">Tokyo</div>
+                    <div class="info-value" id="tokyoTime">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>UTC Reference</h2>
+            <div class="info-row">
+                <div class="info-label">UTC Time</div>
+                <div class="info-value" id="utcTime">Loading...</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">UTC Date</div>
+                <div class="info-value" id="utcDate">Loading...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>IP Lookup</h2>
+            <div class="ip-input-container">
+                <input type="text"
+                    id="ipInput"
+                    class="ip-input"
+                    placeholder="Enter IP address"
+                    pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
+                <button class="lookup-btn" onclick="lookupIP()">Lookup</button>
+            </div>
+            <div id="errorMessage" class="error-message">Invalid IP address format</div>
+            <div class="info-row">
+                <div class="info-label">IP Location</div>
+                <div class="info-value" id="ipLocation">-</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">IP Timezone</div>
+                <div class="info-value" id="ipTimezone">-</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const now = new Date();
+            
+            // Update main time display
+            document.getElementById('currentTime').textContent = 
+                now.toLocaleTimeString();
+            
+            // Update local date
+            document.getElementById('localDate').textContent = 
+                now.toLocaleDateString(undefined, {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+            // Update timezone info
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            document.getElementById('timezone').textContent = timezone;
+
+            // Update UTC offset
+            const utcOffset = now.getTimezoneOffset();
+            const hours = Math.abs(Math.floor(utcOffset / 60));
+            const minutes = Math.abs(utcOffset % 60);
+            const sign = utcOffset > 0 ? '-' : '+';
+            document.getElementById('utcOffset').textContent = 
+                `UTC${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+
+            // Update UTC time
+            document.getElementById('utcTime').textContent = 
+                now.toUTCString().split(' ')[4];
+            document.getElementById('utcDate').textContent = 
+                now.toUTCString().split(' ').slice(0, 4).join(' ');
+
+            // Update world clock
+            updateWorldClock();
+
+            // Update day/night indicator
+            updateDayNightIndicator(now);
+        }
+
+        function updateWorldClock() {
+            const cities = {
+                'londonTime': 'Europe/London',
+                'newYorkTime': 'America/New_York',
+                'tokyoTime': 'Asia/Tokyo'
+            };
+
+            for (const [elementId, timezone] of Object.entries(cities)) {
+                const time = new Date().toLocaleTimeString('en-US', {
+                    timeZone: timezone,
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                document.getElementById(elementId).textContent = time;
+            }
+        }
+
+        function updateDayNightIndicator(date) {
+            const hours = date.getHours();
+            const indicator = document.getElementById('dayNightIndicator');
+            const icon = indicator.querySelector('.day-night-icon');
+            const text = document.getElementById('dayPeriod');
+
+            if (hours >= 6 && hours < 18) {
+                icon.textContent = '🌤️';
+                text.textContent = 'Day';
+            } else {
+                icon.textContent = '🌙';
+                text.textContent = 'Night';
+            }
+        }
+
+        async function lookupIP() {
+            const ipInput = document.getElementById('ipInput');
+            const errorMessage = document.getElementById('errorMessage');
+            const ipLocation = document.getElementById('ipLocation');
+            const ipTimezone = document.getElementById('ipTimezone');
+
+            // IP validation regex
+            const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            
+            if (!ipRegex.test(ipInput.value)) {
+                errorMessage.style.display = 'block';
+                ipLocation.textContent = '-';
+                ipTimezone.textContent = '-';
+                return;
+            }
+
+            errorMessage.style.display = 'none';
+
+            try {
+                ipLocation.textContent = 'Loading...';
+                ipTimezone.textContent = 'Loading...';
+                
+                const response = await fetch(`https://ipapi.co/${ipInput.value}/json/`);
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.reason || 'Invalid IP address');
+                }
+
+                ipLocation.textContent = `${data.city || ''}, ${data.country_name || ''} (${data.country_code || ''})`;
+                ipTimezone.textContent = `${data.timezone || ''} (UTC${data.utc_offset || ''})`;
+            } catch (error) {
+                console.error('Error looking up IP:', error);
+                ipLocation.textContent = 'Error looking up IP';
+                ipTimezone.textContent = 'Error looking up IP';
+            }
+        }
+
+        // Add event listener for Enter key
+        document.getElementById('ipInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                lookupIP();
+            }
+        });
+
+        // Update immediately and then every second
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
+</body>
+</html>
